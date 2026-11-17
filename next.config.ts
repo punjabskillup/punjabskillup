@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.1.49"],
   cacheComponents: false,
   partialPrefetching: false,
+  serverExternalPackages: ["sharp"],
   experimental: {
     serverActions: {
       bodySizeLimit: "4mb",

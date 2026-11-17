@@ -1,6 +1,5 @@
 import "server-only";
 
-import sharp from "sharp";
 import { MAX_THUMBNAIL_BYTES } from "@/lib/admin/thumbnail-constants";
 
 export class InvalidThumbnailError extends Error {
@@ -56,6 +55,7 @@ export async function processThumbnail(file: File) {
   }
 
   try {
+    const sharp = (await import("sharp")).default;
     return await sharp(input, {
       failOn: "error",
       limitInputPixels: 40_000_000,
