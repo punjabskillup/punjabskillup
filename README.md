@@ -11,34 +11,85 @@ every course. It uses Next.js, Supabase Auth/Postgres, pgvector, and Gemini.
 3. Apply all migrations in `supabase/migrations/` using the Supabase CLI
    (`supabase db push`) or the SQL Editor.
 4. Configure Google OAuth as described below.
-5. To test instructor tools and sample courses, sign in once, promote your
-   profile to instructor in the Supabase SQL Editor, then run `supabase/seed.sql`:
+5. Bootstrap the first admin once from the Supabase SQL Editor after creating
+   the account:
 
    ```sql
-   update public.profiles
-   set role = 'instructor'
-   where id = '<your-auth-user-id>';
+   insert into public.admin_users (user_id)
+   select id from auth.users where email = 'YOUR_EMAIL';
    ```
 
-   The seed script creates two free courses and sample YouTube lectures under
-   the first instructor/admin profile. Enroll your learner account in a free
-   course before testing lecture AI. Sign out and back in if the dashboard
-   still shows a stale session.
-6. Run `npm run dev` and open [http://localhost:3000](http://localhost:3000).
+   Admin status is granted only with this trusted SQL step; the application
+   provides no UI or API to grant it. Enable **TOTP MFA** in Supabase
+   Authentication settings, then sign in with the admin account and visit
+   `/manage/security` to enroll an authenticator and verify its code.
+6. Run `supabase/seed.sql` after applying the migrations. It creates the
+   published AI and ML course; if an instructor/admin profile exists, it also
+   adds sample free courses and lectures.
+7. Run `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
 ## Course data
 
 The `courses`, `lectures`, and `enrollments` tables are created by
 `supabase/migrations/20261112010000_create_courses_and_enrollments.sql`.
-RLS restricts published course and lecture reads to signed-in users, course
-editing to the owning instructor/admin, and enrollment reads to each user.
-Published free courses use self-enrollment. Published paid courses use Razorpay
-checkout; a verified, captured payment enrolls the buyer.
+`supabase/migrations/20261116000000_signed_in_catalog.sql` adds course slugs,
+private thumbnail paths, notes, and lecture publication flags. Signed-in users
+can read only published courses, notes, and lectures; client writes to those
+catalog tables are disabled. The `/explore`, `/notes`, `/free-lectures`, and
+`/courses/[slug]` pages require sign-in and are excluded from indexing.
 
-Signed-in learners can use the dashboard and course overviews. Enrolled learners
-can watch lectures. Free lectures may use YouTube or Bunny Stream; paid lectures
-must use Bunny Stream. Instructor/admin profiles can create and publish courses
-at `/instructor`.
+Course thumbnails are stored in the private `course-thumbnails` bucket. The
+server creates one-hour signed URLs for published course images. Free courses
+use self-enrollment. Paid courses use Razorpay checkout; a verified, captured
+payment enrolls the buyer. Admins can manage courses in the panel described
+below; note and lecture editing interfaces are not included.
+
+## Admin course management
+
+Apply `supabase/migrations/20261116010000_admin_panel_security.sql` after the
+catalog migration. The SQL Editor bootstrap above is the only supported way to
+grant administrator identity. Admins must enroll in TOTP MFA at
+`/manage/security`; every other `/manage` page and every admin action requires
+a server-validated admin identity and an `aal2` session.
+
+The hidden admin panel is not linked in the site navigation or sitemap.
+`/manage/courses` supports creating, editing, publishing, and deleting courses.
+Thumbnail uploads are limited to JPEG, PNG, or WebP files up to 3 MB, verified
+by file signature, then cropped to 16:9 and re-encoded as WebP before storage.
+Admin changes and thumbnail object changes are recorded in
+`public.admin_audit_log`.
+
+Optional security integration test credentials (use a non-admin test account
+and a disposable course) are:
+
+```dotenv
+ADMIN_SECURITY_TEST_USER_EMAIL=<test-user-email>
+ADMIN_SECURITY_TEST_USER_PASSWORD=<test-user-password>
+ADMIN_SECURITY_TEST_COURSE_ID=<disposable-course-uuid>
+```
+
+Run `npm run test` for unit and database integration tests and
+`npm run test:e2e` for Playwright route checks. Set the optional credentials
+above to enable the signed-in RLS and route tests.
+
+### Security notes
+
+- Admin pages, server actions, and the admin layout independently call
+  `requireAdmin()`. The proxy's 404 pre-check and no-index/no-store headers are
+  defense in depth, not the authorization boundary.
+- `admin_users` has RLS enabled and no client policies. `is_admin()` reveals
+  only the caller's boolean admin status. Catalog writes and private thumbnail
+  object writes are enforced by RLS; admin server code uses the signed-in
+  user's session and never the service-role key.
+- Admin actions use a database-backed per-admin rate limit. Course, lecture,
+  note, and thumbnail changes are written to an append-only audit log.
+- Only the server processes uploaded images. The server checks supported
+  magic bytes and size, uses Sharp to resize/re-encode, and stores only WebP.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` and model/API secrets in server-only
+  environment variables. They must never use a `NEXT_PUBLIC_` prefix.
+
+Enrolled learners can watch lectures. Free lectures may use YouTube or Bunny
+Stream; paid lectures must use Bunny Stream.
 
 ## Payments and protected video
 
@@ -130,7 +181,8 @@ them with `NEXT_PUBLIC_` or expose them in browser code.
    service-role key into `.env.local`. Get `GEMINI_API_KEY` from Google AI
    Studio. Keep both server keys private.
 5. Apply all migrations in `supabase/migrations/` in filename order. They create
-   profiles, course tables, pgvector transcript storage, and RLS policies.
+   profiles, course tables, pgvector transcript storage, catalog tables, and
+   RLS policies.
 
 The Supabase anon/publishable key is intended for browser use. Do not expose a
 service-role key, Gemini API key, or Google client secret in frontend code or

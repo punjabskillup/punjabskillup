@@ -15,15 +15,15 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(120deg, #eff6ff 0%, #f8fafc 58%, #fff8eb 100%)",
-          color: "#15304b",
+          background: "#ffffff",
+          color: "#111118",
           fontFamily: "Arial, sans-serif",
         }}
       >
         <div style={{ display: "flex", fontSize: 88, fontWeight: 700, letterSpacing: "-5px" }}>
-          Punjab<span style={{ color: "#2347D5" }}>Skill</span>Up
+          Punjab<span style={{ color: "#D91A2A" }}>Skill</span>Up
         </div>
-        <div style={{ marginTop: 24, fontSize: 34, color: "#64748b" }}>
+        <div style={{ marginTop: 24, fontSize: 34, color: "#5A5A66" }}>
           Skills for Punjab.
         </div>
       </div>

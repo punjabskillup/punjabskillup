@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type IconBadgeProps = {
   children: ReactNode;
-  tone?: "primary" | "navy" | "saffron" | "teal" | "muted" | "rose";
+  tone?: "primary";
   className?: string;
 };
 

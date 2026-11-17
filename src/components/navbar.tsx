@@ -151,9 +151,16 @@ export function Navbar() {
 
           {user ? (
             <div className="navbar-signed-in">
-              <Link className="navbar-teach-link" href="/instructor">
+              <Link className="navbar-teach-link" href="/teach">
                 Teach with us
               </Link>
+              <button
+                className="navbar-join-button navbar-mobile-join-button"
+                type="button"
+                onClick={openSignInDialog}
+              >
+                Join free
+              </button>
               <div className="navbar-account" id="profile">
                 <button
                   className="navbar-avatar-button"
@@ -190,7 +197,7 @@ export function Navbar() {
             </div>
           ) : authReady ? (
             <nav className="navbar-actions" aria-label="Main navigation">
-              <Link className="navbar-teach-link" href="/instructor">
+              <Link className="navbar-teach-link" href="/teach">
                 Teach with us
               </Link>
               <button
@@ -209,7 +216,16 @@ export function Navbar() {
               </button>
             </nav>
           ) : (
-            <span className="navbar-actions-placeholder" aria-hidden="true" />
+            <nav className="navbar-actions" aria-label="Main navigation">
+              <span className="navbar-actions-placeholder" aria-hidden="true" />
+              <button
+                className="navbar-join-button"
+                type="button"
+                onClick={openSignInDialog}
+              >
+                Join free
+              </button>
+            </nav>
           )}
         </div>
       </header>

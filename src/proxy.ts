@@ -3,6 +3,17 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isManagePath =
+    pathname === "/manage" || pathname.startsWith("/manage/");
+
+  function secureManageResponse(response: NextResponse) {
+    if (isManagePath) {
+      response.headers.set("X-Robots-Tag", "noindex, nofollow");
+      response.headers.set("Cache-Control", "no-store");
+    }
+    return response;
+  }
+
   const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   if (configuredSiteUrl) {
     const canonicalSite = new URL(configuredSiteUrl);
@@ -18,12 +29,19 @@ export async function proxy(request: NextRequest) {
           `${request.nextUrl.pathname}${request.nextUrl.search}`,
           canonicalSite.origin,
         );
-        return NextResponse.redirect(canonicalUrl, 301);
+        return secureManageResponse(NextResponse.redirect(canonicalUrl, 301));
       }
     }
   }
 
   const isProtectedPath =
+    isManagePath ||
+    pathname === "/explore" ||
+    pathname.startsWith("/explore/") ||
+    pathname === "/notes" ||
+    pathname.startsWith("/notes/") ||
+    pathname === "/free-lectures" ||
+    pathname.startsWith("/free-lectures/") ||
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/") ||
     pathname === "/courses" ||
@@ -35,12 +53,16 @@ export async function proxy(request: NextRequest) {
 
   if (!supabaseUrl || !anonKey) {
     if (!isProtectedPath) {
-      return NextResponse.next();
+      return secureManageResponse(NextResponse.next());
+    }
+
+    if (isManagePath) {
+      return secureManageResponse(new NextResponse("Not Found", { status: 404 }));
     }
 
     const setupUrl = new URL("/", request.url);
     setupUrl.searchParams.set("auth", "configuration-required");
-    return NextResponse.redirect(setupUrl);
+    return secureManageResponse(NextResponse.redirect(setupUrl));
   }
 
   let response = NextResponse.next({ request });
@@ -65,15 +87,19 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user && isManagePath) {
+    return secureManageResponse(new NextResponse("Not Found", { status: 404 }));
+  }
+
   if (!user && isProtectedPath) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   if (user && pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/explore", request.url));
   }
 
-  return response;
+  return secureManageResponse(response);
 }
 
 export const config = {

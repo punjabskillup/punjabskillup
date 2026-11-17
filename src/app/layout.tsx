@@ -36,6 +36,20 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/professor/hero-professor-desktop.webp"
+          media="(min-width: 768px)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/professor/hero-professor-mobile.webp"
+          media="(max-width: 767px)"
+          fetchPriority="high"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: "document.documentElement.classList.add('js')",
