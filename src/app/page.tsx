@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AuthFeedback } from "@/components/auth-feedback";
 import { JsonLd } from "@/components/json-ld";
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
@@ -54,6 +56,9 @@ export default async function Home() {
 
   return (
     <main>
+      <Suspense fallback={null}>
+        <AuthFeedback />
+      </Suspense>
       {homeStructuredData.map((data) => (
         <JsonLd key={data["@type"]} data={data} />
       ))}

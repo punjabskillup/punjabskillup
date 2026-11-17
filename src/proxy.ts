@@ -19,8 +19,11 @@ export async function proxy(request: NextRequest) {
     const canonicalSite = new URL(configuredSiteUrl);
     const isPlaceholder = canonicalSite.hostname === "your-domain";
     const isLocal = ["localhost", "127.0.0.1"].includes(canonicalSite.hostname);
+    const isLocalRequest = ["localhost", "127.0.0.1", "[::1]"].includes(
+      request.nextUrl.hostname,
+    );
 
-    if (!isPlaceholder && !isLocal) {
+    if (!isPlaceholder && !isLocal && !isLocalRequest) {
       const requestHost = request.headers.get("host");
       const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0];
       const requestProtocol = forwardedProtocol || request.nextUrl.protocol.replace(":", "");

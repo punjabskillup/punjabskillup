@@ -252,16 +252,17 @@ export async function uploadCourseThumbnailAction(
   }
 
   const newPath = `courses/${courseId}/${crypto.randomUUID()}.webp`;
+  const uploadBody = Uint8Array.from(output);
   const { error: uploadError } = await supabase.storage
     .from("course-thumbnails")
-    .upload(newPath, output, {
+    .upload(newPath, uploadBody, {
       contentType: "image/webp",
       cacheControl: "3600",
       upsert: false,
     });
 
   if (uploadError) {
-    console.error("Admin thumbnail storage upload failed.", uploadError.message);
+    console.error("Admin thumbnail storage upload failed.", uploadError);
     return { success: false, message: "Thumbnail upload failed." };
   }
 
