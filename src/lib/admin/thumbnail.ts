@@ -54,17 +54,13 @@ export async function processThumbnail(file: File) {
     throw new InvalidThumbnailError();
   }
 
-  try {
-    const sharp = (await import("sharp")).default;
-    return await sharp(input, {
-      failOn: "error",
-      limitInputPixels: 40_000_000,
-    })
-      .rotate()
-      .resize(1280, 720, { fit: "cover", position: "attention" })
-      .webp({ quality: 84, effort: 4 })
-      .toBuffer();
-  } catch {
-    throw new InvalidThumbnailError();
-  }
+  const sharp = (await import("sharp")).default;
+  return sharp(input, {
+    failOn: "error",
+    limitInputPixels: 40_000_000,
+  })
+    .rotate()
+    .resize(1280, 720, { fit: "cover", position: "attention" })
+    .webp({ quality: 84, effort: 4 })
+    .toBuffer();
 }

@@ -238,12 +238,16 @@ export async function uploadCourseThumbnailAction(
   try {
     output = await processThumbnail(file);
   } catch (error) {
-    if (!(error instanceof InvalidThumbnailError)) {
-      console.error("Admin thumbnail processing failed.", error);
+    if (error instanceof InvalidThumbnailError) {
+      return {
+        success: false,
+        message: "Choose a valid JPEG, PNG, or WebP image up to 3 MB.",
+      };
     }
+    console.error("Admin thumbnail processing failed.", error);
     return {
       success: false,
-      message: "Choose a valid JPEG, PNG, or WebP image up to 3 MB.",
+      message: "We couldn't process this image. Try a different image or try again later.",
     };
   }
 
