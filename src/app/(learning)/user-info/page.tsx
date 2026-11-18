@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { UserInfoForm } from "@/components/user-info-form";
+import { ProfileSetupForm } from "@/components/user-info-form";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Your information | PunjabSkillUp",
+  title: "Set up your profile | PunjabSkillUp",
   robots: { index: false, follow: false },
 };
 
@@ -28,11 +28,19 @@ export default async function UserInfoPage() {
       (error.code === "42703" || error.code === "PGRST204" || error.code === "PGRST200");
 
     return (
-      <section className="catalog-page user-info-page">
-        <div className="catalog-error" role="alert">
-          {phoneColumnMissing
-            ? "The profile database is missing the contact number field. Apply the existing 20261118100000_collect_enrollment_phone.sql migration in Supabase, then refresh this page."
-            : "We couldn’t load your profile. Please check the Supabase profile setup, then refresh and try again."}
+      <section className="profile-setup" aria-labelledby="profile-setup-heading">
+        <header className="profile-setup-heading">
+          <span className="profile-setup-kicker">ACCOUNT SETUP <span>01 / 01</span></span>
+          <h1 id="profile-setup-heading">Set up your learner profile</h1>
+          <p>One quick step before you start learning.</p>
+        </header>
+        <div className="profile-setup-error" role="alert">
+          <strong>{phoneColumnMissing ? "A database update is needed" : "We couldn’t load your profile"}</strong>
+          <p>
+            {phoneColumnMissing
+              ? "Apply the existing 20261118100000_collect_enrollment_phone.sql migration in Supabase, then refresh this page."
+              : "Please check the Supabase profile setup, then refresh this page."}
+          </p>
         </div>
       </section>
     );
@@ -42,13 +50,13 @@ export default async function UserInfoPage() {
   const name = profile?.full_name?.trim() || (typeof googleName === "string" ? googleName : "");
 
   return (
-    <section className="catalog-page user-info-page" aria-labelledby="user-info-heading">
-      <header className="catalog-heading">
-        <span className="eyebrow">YOUR ACCOUNT</span>
-        <h1 id="user-info-heading">Your information</h1>
-        <p>Check your details and add a contact number to your profile.</p>
+    <section className="profile-setup" aria-labelledby="profile-setup-heading">
+      <header className="profile-setup-heading">
+        <span className="profile-setup-kicker">ACCOUNT SETUP <span>01 / 01</span></span>
+        <h1 id="profile-setup-heading">Set up your learner profile</h1>
+        <p>Confirm your details once, then you’re ready to learn.</p>
       </header>
-      <UserInfoForm
+      <ProfileSetupForm
         initialName={name}
         email={user.email ?? ""}
         initialPhone={profile?.contact_phone ?? ""}

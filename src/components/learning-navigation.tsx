@@ -13,6 +13,7 @@ const tabs = [
 
 export function LearningNavigation({ name }: { name: string }) {
   const pathname = usePathname();
+  const isProfileSetup = pathname === "/user-info";
   const initial = name.trim().charAt(0).toUpperCase() || "L";
   const isActive = (href: string) =>
     pathname === href || (href === "/explore" && pathname.startsWith("/courses/"));
@@ -23,19 +24,21 @@ export function LearningNavigation({ name }: { name: string }) {
         <Link className="learning-logo" href="/explore" aria-label="PunjabSkillUp">
           Punjab<span>Skill</span>Up
         </Link>
-        <nav className="learning-desktop-tabs" aria-label="Learning">
-          {tabs.map(({ href, label }) => (
-            <Link
-              aria-current={isActive(href) ? "page" : undefined}
-              className={`learning-tab${isActive(href) ? " active" : ""}`}
-              href={href}
-              key={href}
-              prefetch
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        {!isProfileSetup && (
+          <nav className="learning-desktop-tabs" aria-label="Learning">
+            {tabs.map(({ href, label }) => (
+              <Link
+                aria-current={isActive(href) ? "page" : undefined}
+                className={`learning-tab${isActive(href) ? " active" : ""}`}
+                href={href}
+                key={href}
+                prefetch
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
         <details className="learning-account">
           <summary aria-label="Open account menu">
             <span className="learning-avatar" aria-hidden="true">{initial}</span>
@@ -44,28 +47,30 @@ export function LearningNavigation({ name }: { name: string }) {
           </summary>
           <div className="learning-account-menu">
             <span className="learning-account-menu-name">{name}</span>
-            <Link className="learning-account-menu-link" href="/user-info">Your information</Link>
+            <Link className="learning-account-menu-link" href="/user-info">Profile</Link>
             <SignOutButton />
           </div>
         </details>
       </header>
-      <nav className="learning-mobile-tabs" aria-label="Learning">
-        {tabs.map(({ href, label, Icon }) => {
-          const active = isActive(href);
-          return (
-            <Link
-              aria-current={active ? "page" : undefined}
-              className={`learning-mobile-tab${active ? " active" : ""}`}
-              href={href}
-              key={href}
-              prefetch
-            >
-              <Icon aria-hidden="true" strokeWidth={1.8} />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {!isProfileSetup && (
+        <nav className="learning-mobile-tabs" aria-label="Learning">
+          {tabs.map(({ href, label, Icon }) => {
+            const active = isActive(href);
+            return (
+              <Link
+                aria-current={active ? "page" : undefined}
+                className={`learning-mobile-tab${active ? " active" : ""}`}
+                href={href}
+                key={href}
+                prefetch
+              >
+                <Icon aria-hidden="true" strokeWidth={1.8} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </>
   );
 }
