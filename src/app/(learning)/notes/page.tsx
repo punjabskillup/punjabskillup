@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FileText, LockKeyhole } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,7 +35,7 @@ export default async function NotesPage() {
                 <FileText />
               </span>
               <div className="catalog-list-copy">
-                <h2>{note.title}</h2>
+                <h2><Link href={`/notes/${note.id}`}>{note.title}</Link></h2>
                 <p>{note.courses[0]?.title ?? "General notes"}</p>
               </div>
               {note.is_free ? (

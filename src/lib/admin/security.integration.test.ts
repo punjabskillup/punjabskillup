@@ -3,19 +3,22 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const email = process.env.ADMIN_SECURITY_TEST_USER_EMAIL;
-const password = process.env.ADMIN_SECURITY_TEST_USER_PASSWORD;
+const accessToken = process.env.ADMIN_SECURITY_TEST_USER_ACCESS_TOKEN;
 const courseId = process.env.ADMIN_SECURITY_TEST_COURSE_ID;
-const canRun = Boolean(supabaseUrl && anonKey && email && password && courseId);
+const canRun = Boolean(supabaseUrl && anonKey && accessToken && courseId);
 
 describe.skipIf(!canRun)("catalog RLS for a normal signed-in user", () => {
   it("refuses course insert, update, delete, and private thumbnail upload", async () => {
-    const supabase = createClient(supabaseUrl!, anonKey!);
-    const { data: session, error: signInError } =
-      await supabase.auth.signInWithPassword({ email: email!, password: password! });
+    const authClient = createClient(supabaseUrl!, anonKey!);
+    const { data: { user }, error: authError } =
+      await authClient.auth.getUser(accessToken!);
 
-    expect(signInError).toBeNull();
-    expect(session.user).toBeTruthy();
+    expect(authError).toBeNull();
+    expect(user).toBeTruthy();
+
+    const supabase = createClient(supabaseUrl!, anonKey!, {
+      accessToken: async () => accessToken!,
+    });
 
     const { data: isAdmin, error: adminCheckError } =
       await supabase.rpc("is_admin");

@@ -5,6 +5,9 @@ import Link from "next/link";
 import type { CourseWithLectures } from "@/lib/courses";
 import { getBunnyVideoId, getYouTubeVideoId } from "@/lib/courses";
 import { createClient } from "@/lib/supabase/client";
+import { uploadCourseThumbnailAction } from "@/app/manage/courses/actions";
+import { MAX_THUMBNAIL_BYTES } from "@/lib/admin/thumbnail-constants";
+import { NotesUploader } from "@/components/notes-uploader";
 
 type InstructorWorkspaceProps = {
   courses: CourseWithLectures[];
@@ -35,6 +38,11 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
     const description = String(formData.get("description") ?? "").trim();
     const priceValue = String(formData.get("price_inr") ?? "0").trim();
     const thumbnailValue = String(formData.get("thumbnail_url") ?? "").trim();
+    const thumbnailFileValue = formData.get("thumbnail_file");
+    const thumbnailFile =
+      thumbnailFileValue instanceof File && thumbnailFileValue.size > 0
+        ? thumbnailFileValue
+        : null;
     const priceInr = Number(priceValue);
 
     if (!title) {
@@ -47,6 +55,21 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
     }
     if (thumbnailValue && !isValidHttpUrl(thumbnailValue)) {
       setCourseMessage("Enter a valid thumbnail URL.");
+      return;
+    }
+    if (thumbnailValue && thumbnailFile) {
+      setCourseMessage("Use a thumbnail URL or upload an image, not both.");
+      return;
+    }
+    if (thumbnailFile && thumbnailFile.size > MAX_THUMBNAIL_BYTES) {
+      setCourseMessage("Choose an image up to 3 MB.");
+      return;
+    }
+    if (
+      thumbnailFile &&
+      !["image/jpeg", "image/png", "image/webp"].includes(thumbnailFile.type)
+    ) {
+      setCourseMessage("Choose a JPEG, PNG, or WebP image.");
       return;
     }
 
@@ -63,7 +86,7 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
         .insert({
           title,
           description,
-          thumbnail_url: thumbnailValue || null,
+          thumbnail_url: thumbnailFile ? null : thumbnailValue || null,
           price_inr: priceInr,
           is_published: formData.get("is_published") === "on",
           created_by: user.id,
@@ -78,8 +101,27 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
       const createdCourse = { ...data, lectures: [] };
       setCourses((current) => [createdCourse, ...current]);
       setSelectedCourseId(createdCourse.id);
+
+      let successMessage = "Course created. You can add its first lecture below.";
+      if (thumbnailFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.set("course_id", createdCourse.id);
+        uploadFormData.set("file", thumbnailFile);
+        try {
+          const uploadResult = await uploadCourseThumbnailAction(uploadFormData);
+          if (!uploadResult.success) {
+            successMessage = `Course created, but the thumbnail could not be uploaded: ${uploadResult.message}`;
+          } else {
+            successMessage = "Course and thumbnail created. You can add its first lecture below.";
+          }
+        } catch {
+          successMessage =
+            "Course created, but the thumbnail upload failed. Try uploading it from the course editor.";
+        }
+      }
+
       form.reset();
-      setCourseMessage("Course created. You can add its first lecture below.");
+      setCourseMessage(successMessage);
     } catch (error) {
       setCourseMessage(getErrorMessage(error, "Unable to create the course."));
     } finally {
@@ -194,6 +236,14 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
               <input name="thumbnail_url" type="url" inputMode="url" />
             </label>
           </div>
+          <label>
+            Or upload a thumbnail image (JPEG, PNG, or WebP; up to 3 MB)
+            <input
+              name="thumbnail_file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            />
+          </label>
           <label className="checkbox-field">
             <input name="is_published" type="checkbox" defaultChecked />
             <span>Publish this course so signed-in learners can see it</span>
@@ -278,6 +328,8 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
           </form>
         )}
       </section>
+
+      <NotesUploader courses={courses} />
 
       {courses.length > 0 && (
         <section className="instructor-course-list" aria-labelledby="your-courses-heading">

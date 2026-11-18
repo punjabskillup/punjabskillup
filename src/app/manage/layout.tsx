@@ -10,7 +10,7 @@ export default async function ManageLayout({
   children: ReactNode;
 }) {
   await connection();
-  await requireAdmin({ allowBeforeMfa: true });
+  await requireAdmin();
 
   return children;
 }

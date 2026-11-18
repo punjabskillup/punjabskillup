@@ -72,6 +72,7 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
   const [
     { data: lectures, error: lecturesError },
     { data: enrollment, error: enrollmentError },
+    { data: profile, error: profileError },
     { urls, error: thumbnailError },
   ] = await Promise.all([
     supabase
@@ -86,10 +87,15 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
       .eq("user_id", user.id)
       .eq("course_id", course.id)
       .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("full_name,contact_email,contact_phone")
+      .eq("id", user.id)
+      .maybeSingle(),
     createSignedThumbnailUrls(supabase, [course.thumbnail_path]),
   ]);
 
-  if (lecturesError || enrollmentError) {
+  if (lecturesError || enrollmentError || profileError) {
     return (
       <CourseError message="We couldn't load this course. Please refresh the page and try again." />
     );
@@ -102,10 +108,12 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
   }
 
   const metadataName = user.user_metadata.full_name ?? user.user_metadata.name;
-  const name =
-    typeof metadataName === "string" && metadataName.trim()
-      ? metadataName.trim()
-      : user.email ?? "Learner";
+  const profileName =
+    typeof profile?.full_name === "string" ? profile.full_name.trim() : "";
+  const enrollmentName =
+    profileName ||
+    (typeof metadataName === "string" ? metadataName.trim() : "");
+  const name = enrollmentName || user.email || "Learner";
   const thumbnailUrl = urls[0] ?? null;
 
   return (
@@ -145,12 +153,19 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
                   You&apos;re enrolled
                 </span>
               ) : course.price_inr === 0 ? (
-                <EnrollButton courseId={course.id} />
+                <EnrollButton
+                  courseId={course.id}
+                  initialName={enrollmentName}
+                  initialPhone={profile?.contact_phone ?? ""}
+                />
               ) : (
                 <PaidEnrollButton
                   courseId={course.id}
                   courseTitle={course.title}
                   priceInr={course.price_inr}
+                  initialEmail={profile?.contact_email ?? user.email ?? ""}
+                  initialName={enrollmentName}
+                  initialPhone={profile?.contact_phone ?? ""}
                 />
               )}
             </div>

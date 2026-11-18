@@ -3,9 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function requireAdmin(
-  options: { allowBeforeMfa?: boolean } = {},
-) {
+export async function requireAdmin() {
   let supabase: Awaited<ReturnType<typeof createClient>>;
 
   try {
@@ -30,24 +28,7 @@ export async function requireAdmin(
       notFound();
     }
 
-    const { data: assurance, error: assuranceError } =
-      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (assuranceError || !assurance) {
-      notFound();
-    }
-
-    if (options.allowBeforeMfa) {
-      if (
-        assurance.currentLevel !== "aal1" &&
-        assurance.currentLevel !== "aal2"
-      ) {
-        notFound();
-      }
-    } else if (assurance.currentLevel !== "aal2") {
-      notFound();
-    }
-
-    return { supabase, user, assurance };
+    return { supabase, user };
   } catch {
     notFound();
   }

@@ -30,11 +30,10 @@ export function GoogleSignInButton({ variant }: GoogleSignInButtonProps) {
 
     try {
       const supabase = createClient();
+      const redirectTo = new URL("/auth/callback", window.location.origin);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { redirectTo: redirectTo.toString() },
       });
 
       if (error) {
@@ -59,7 +58,11 @@ export function GoogleSignInButton({ variant }: GoogleSignInButtonProps) {
       >
         <GoogleMark />
         <span>
-          {isLoading ? "Connecting..." : variant === "outline" ? "Sign in" : "Continue with Google"}
+          {isLoading
+            ? "Connecting..."
+            : variant === "outline"
+              ? "Sign in"
+              : "Continue with Google"}
         </span>
       </Button>
       {errorMessage && (

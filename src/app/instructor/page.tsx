@@ -59,11 +59,25 @@ async function InstructorContent() {
     redirect("/dashboard");
   }
 
-  const { data, error } = await supabase
+  const { data: isAdmin, error: adminError } = await supabase.rpc("is_admin");
+  if (adminError) {
+    return (
+      <section className="instructor-content">
+        <div className="database-notice" role="alert">
+          <strong>We couldn&apos;t verify your course access.</strong>
+          <p>Check that the admin security migration has been applied, then try again.</p>
+        </div>
+      </section>
+    );
+  }
+
+  let coursesQuery = supabase
     .from("courses")
-    .select("id,title,description,thumbnail_url,price_inr,is_published,created_by,created_at,lectures(id,title,position)")
-    .eq("created_by", user.id)
-    .order("created_at", { ascending: false });
+    .select("id,title,description,thumbnail_url,price_inr,is_published,created_by,created_at,lectures(id,title,position)");
+  if (!isAdmin) {
+    coursesQuery = coursesQuery.eq("created_by", user.id);
+  }
+  const { data, error } = await coursesQuery.order("created_at", { ascending: false });
 
   return (
     <section className="instructor-content">

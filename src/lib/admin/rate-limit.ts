@@ -3,7 +3,7 @@ import "server-only";
 import type { createClient } from "@/lib/supabase/server";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
-export type AdminRateLimitBucket = "admin-actions" | "admin-mfa";
+export type AdminRateLimitBucket = "admin-actions";
 
 export async function consumeAdminRateLimit(
   supabase: ServerClient,

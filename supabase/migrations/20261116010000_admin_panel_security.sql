@@ -51,7 +51,7 @@ create policy "Admins can insert their own audit rows"
 
 create table if not exists public.admin_rate_limits (
   user_id uuid not null references public.admin_users (user_id) on delete cascade,
-  bucket text not null check (bucket in ('admin-actions', 'admin-mfa')),
+  bucket text not null check (bucket = 'admin-actions'),
   window_started_at timestamptz not null,
   request_count integer not null check (request_count > 0),
   primary key (user_id, bucket)
@@ -78,7 +78,6 @@ begin
 
   v_limit := case p_bucket
     when 'admin-actions' then 30
-    when 'admin-mfa' then 5
     else null
   end;
   if v_limit is null then

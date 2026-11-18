@@ -30,6 +30,7 @@ export function LearningNavigation({ name }: { name: string }) {
               className={`learning-tab${isActive(href) ? " active" : ""}`}
               href={href}
               key={href}
+              prefetch
             >
               {label}
             </Link>
@@ -56,6 +57,7 @@ export function LearningNavigation({ name }: { name: string }) {
               className={`learning-mobile-tab${active ? " active" : ""}`}
               href={href}
               key={href}
+              prefetch
             >
               <Icon aria-hidden="true" strokeWidth={1.8} />
               <span>{label}</span>

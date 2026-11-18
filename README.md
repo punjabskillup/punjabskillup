@@ -10,7 +10,8 @@ every course. It uses Next.js, Supabase Auth/Postgres, pgvector, and Gemini.
    Gemini values described below.
 3. Apply all migrations in `supabase/migrations/` using the Supabase CLI
    (`supabase db push`) or the SQL Editor.
-4. Configure Google OAuth as described below.
+4. Configure Google OAuth as described below. Google is the only sign-in
+   provider used by the application.
 5. Bootstrap the first admin once from the Supabase SQL Editor after creating
    the account:
 
@@ -20,9 +21,8 @@ every course. It uses Next.js, Supabase Auth/Postgres, pgvector, and Gemini.
    ```
 
    Admin status is granted only with this trusted SQL step; the application
-   provides no UI or API to grant it. Enable **TOTP MFA** in Supabase
-   Authentication settings, then sign in with the admin account and visit
-   `/manage/security` to enroll an authenticator and verify its code.
+   provides no UI or API to grant it. Sign in with Google, then visit
+   `/manage/courses`.
 6. Run `supabase/seed.sql` after applying the migrations. It creates the
    published AI and ML course; if an instructor/admin profile exists, it also
    adds sample free courses and lectures.
@@ -42,15 +42,32 @@ Course thumbnails are stored in the private `course-thumbnails` bucket. The
 server creates one-hour signed URLs for published course images. Free courses
 use self-enrollment. Paid courses use Razorpay checkout; a verified, captured
 payment enrolls the buyer. Admins can manage courses in the panel described
-below; note and lecture editing interfaces are not included.
+below. Instructors can add lectures and upload course notes from `/instructor`;
+note editing and deletion are not included.
 
 ## Admin course management
 
 Apply `supabase/migrations/20261116010000_admin_panel_security.sql` after the
 catalog migration. The SQL Editor bootstrap above is the only supported way to
-grant administrator identity. Admins must enroll in TOTP MFA at
-`/manage/security`; every other `/manage` page and every admin action requires
-a server-validated admin identity and an `aal2` session.
+grant administrator identity. Admin pages and actions require a
+Google-authenticated user whose ID is in `public.admin_users`.
+
+Google is the only sign-in method used by the application. Set
+`NEXT_PUBLIC_SITE_URL` to the exact HTTPS origin used by the site (for example
+`https://example.com`); local development can use `http://localhost:3000`.
+In Supabase Authentication settings, enable Google and disable unused phone,
+email/password, and MFA/TOTP methods. Existing users who only used phone or
+email/password sign-in need their accounts migrated before those providers are
+disabled.
+
+The user's Google email is saved to `public.profiles`. During free or paid
+course enrollment, learners enter their name and contact number; these are
+saved to `profiles.full_name` and `profiles.contact_phone`. The number is not
+SMS-verified. Apply
+`supabase/migrations/20261117100000_collect_enrollment_email.sql` and
+`supabase/migrations/20261118100000_collect_enrollment_phone.sql` before
+deploying. Enable manual identity linking in Supabase Auth settings if required
+to link Google to an existing account.
 
 The hidden admin panel is not linked in the site navigation or sitemap.
 `/manage/courses` supports creating, editing, publishing, and deleting courses.
@@ -59,12 +76,32 @@ by file signature, then cropped to 16:9 and re-encoded as WebP before storage.
 Admin changes and thumbnail object changes are recorded in
 `public.admin_audit_log`.
 
-Optional security integration test credentials (use a non-admin test account
-and a disposable course) are:
+### Course notes
+
+Apply `supabase/migrations/20261117000000_cloudflare_r2_notes.sql` after the
+admin panel migration. Create a **private** Cloudflare R2 bucket and an R2 API
+token limited to that bucket, then configure these server-only variables:
 
 ```dotenv
-ADMIN_SECURITY_TEST_USER_EMAIL=<test-user-email>
-ADMIN_SECURITY_TEST_USER_PASSWORD=<test-user-password>
+CLOUDFLARE_ACCOUNT_ID=<cloudflare-account-id>
+CLOUDFLARE_R2_ACCESS_KEY_ID=<r2-access-key-id>
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
+CLOUDFLARE_R2_BUCKET=<private-bucket-name>
+```
+
+Instructors can upload PDF, DOC, or DOCX notes up to 20 MB to courses they own;
+admins can upload to any course. Published free notes are available to signed-in
+learners, while premium notes require enrollment in the associated course.
+Uploads are stored privately in R2. Share the generated `/notes/<id>` link on
+your website; file downloads are streamed through the website after access is
+verified, so the R2 address is not exposed. No R2 public domain or browser CORS
+configuration is needed.
+
+Optional RLS integration test credentials (use a non-admin Google-authenticated
+test account and a disposable course) are:
+
+```dotenv
+ADMIN_SECURITY_TEST_USER_ACCESS_TOKEN=<supabase-access-token>
 ADMIN_SECURITY_TEST_COURSE_ID=<disposable-course-uuid>
 ```
 

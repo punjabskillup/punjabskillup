@@ -257,7 +257,7 @@ export function Navbar() {
             Punjab<span>Skill</span>Up
           </Link>
           <h2 id="navbar-sign-in-title">Welcome to PunjabSkillUp</h2>
-          <p>Sign in or join free to start learning</p>
+          <p>Sign in with Google to continue learning.</p>
           <GoogleSignInButton variant="google" />
           <p className="navbar-dialog-legal">
             By continuing, you agree to our <Link href="/terms">Terms</Link> and{" "}
