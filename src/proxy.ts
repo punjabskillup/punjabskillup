@@ -53,6 +53,21 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/instructor/") ||
     pathname === "/user-info" ||
     pathname.startsWith("/user-info/");
+  const isUserInfoPath = pathname === "/user-info" || pathname.startsWith("/user-info/");
+  const isLearningPath =
+    pathname === "/" ||
+    pathname === "/explore" ||
+    pathname.startsWith("/explore/") ||
+    pathname === "/notes" ||
+    pathname.startsWith("/notes/") ||
+    pathname === "/free-lectures" ||
+    pathname.startsWith("/free-lectures/") ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/") ||
+    pathname === "/courses" ||
+    pathname.startsWith("/courses/") ||
+    pathname === "/instructor" ||
+    pathname.startsWith("/instructor/");
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -98,6 +113,25 @@ export async function proxy(request: NextRequest) {
 
   if (!user && isProtectedPath) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (user && isLearningPath && !isUserInfoPath) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name,contact_phone")
+      .eq("id", user.id)
+      .maybeSingle();
+    const phoneDigits = (profile?.contact_phone ?? "").replace(/\D/g, "");
+    const hasIndianPhone =
+      phoneDigits.length === 10 || (phoneDigits.length === 12 && phoneDigits.startsWith("91"));
+
+    if (!profile?.full_name?.trim() || !hasIndianPhone) {
+      const userInfoUrl = new URL("/user-info", request.url);
+      const redirectResponse = NextResponse.redirect(userInfoUrl);
+      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+      redirectResponse.headers.set("Cache-Control", "private, no-store, max-age=0");
+      return secureManageResponse(redirectResponse);
+    }
   }
 
   if (user && pathname === "/") {
