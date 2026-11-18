@@ -50,7 +50,9 @@ export async function proxy(request: NextRequest) {
     pathname === "/courses" ||
     pathname.startsWith("/courses/") ||
     pathname === "/instructor" ||
-    pathname.startsWith("/instructor/");
+    pathname.startsWith("/instructor/") ||
+    pathname === "/user-info" ||
+    pathname.startsWith("/user-info/");
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

@@ -60,10 +60,11 @@ email/password, and MFA/TOTP methods. Existing users who only used phone or
 email/password sign-in need their accounts migrated before those providers are
 disabled.
 
-The user's Google email is saved to `public.profiles`. During free or paid
-course enrollment, learners enter their name and contact number; these are
-saved to `profiles.full_name` and `profiles.contact_phone`. The number is not
-SMS-verified. Apply
+After Google sign-in, learners land on `/user-info`. The page shows their Google
+email, pre-fills an editable username from Google, and asks for a 10-digit Indian
+mobile number with a fixed `+91` prefix. Saving stores the username in
+`profiles.full_name` and the number in `profiles.contact_phone`; the number is
+not SMS-verified. Course enrollment no longer asks for contact details. Apply
 `supabase/migrations/20261117100000_collect_enrollment_email.sql` and
 `supabase/migrations/20261118100000_collect_enrollment_phone.sql` before
 deploying. Enable manual identity linking in Supabase Auth settings if required

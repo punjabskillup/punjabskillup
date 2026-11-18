@@ -30,11 +30,18 @@ async function SignedInLearningLayout({ children }: { children: ReactNode }) {
     redirect("/");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const metadataName = user.user_metadata.full_name ?? user.user_metadata.name;
-  const name =
+  const googleName =
     typeof metadataName === "string" && metadataName.trim()
       ? metadataName.trim()
       : user.email ?? "Learner";
+  const name = profile?.full_name?.trim() || googleName;
 
   return (
     <>

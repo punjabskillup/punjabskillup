@@ -62,8 +62,6 @@ export function PaidEnrollButton({
   initialPhone,
 }: PaidEnrollButtonProps) {
   const router = useRouter();
-  const [name, setName] = useState(initialName);
-  const [phone, setPhone] = useState(initialPhone);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,16 +71,6 @@ export function PaidEnrollButton({
     setMessage("");
 
     try {
-      const contactResponse = await fetch("/api/profile/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone }),
-      });
-      const contactResult: { error?: string } = await contactResponse.json();
-      if (!contactResponse.ok) {
-        throw new Error(contactResult.error ?? "Unable to save your contact details.");
-      }
-
       const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
       if (!publicKey) {
         throw new Error("Payments are not configured yet. Please try again later.");
@@ -116,7 +104,7 @@ export function PaidEnrollButton({
         name: "PunjabSkillUp",
         description: courseTitle,
         order_id: orderResult.order_id,
-        prefill: { name, email: initialEmail, contact: phone },
+        prefill: { name: initialName, email: initialEmail, contact: initialPhone },
         theme: { color: "#14172B" },
         modal: {
           ondismiss: () => setIsLoading(false),
@@ -166,40 +154,6 @@ export function PaidEnrollButton({
 
   return (
     <form className="enroll-control" onSubmit={beginPayment}>
-      <div className="enroll-form-intro">
-        <span className="enroll-form-step">ONE LAST STEP</span>
-        <h2>Complete your enrollment</h2>
-        <p>Save your details to your learner profile.</p>
-      </div>
-      <label className="enrollment-contact-field">
-        Contact number
-        <input
-          autoComplete="tel"
-          inputMode="tel"
-          maxLength={24}
-          onChange={(event) => setPhone(event.currentTarget.value)}
-          placeholder="+91 98765 43210"
-          required
-          type="tel"
-          value={phone}
-        />
-      </label>
-      <label className="enrollment-contact-field">
-        Name
-        <input
-          autoComplete="name"
-          autoCapitalize="words"
-          maxLength={120}
-          onChange={(event) => setName(event.currentTarget.value)}
-          placeholder="Your name"
-          required
-          type="text"
-          value={name}
-        />
-      </label>
-      <p className="enroll-form-note">
-        Contact numbers are saved but not verified by SMS.
-      </p>
       <button
         className="primary-action"
         type="submit"

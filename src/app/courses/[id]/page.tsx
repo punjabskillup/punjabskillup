@@ -89,7 +89,7 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
       .maybeSingle(),
     supabase
       .from("profiles")
-      .select("full_name,contact_email,contact_phone")
+      .select("full_name,contact_phone")
       .eq("id", user.id)
       .maybeSingle(),
     createSignedThumbnailUrls(supabase, [course.thumbnail_path]),
@@ -155,15 +155,13 @@ async function CourseContent({ params }: { params: Promise<{ id: string }> }) {
               ) : course.price_inr === 0 ? (
                 <EnrollButton
                   courseId={course.id}
-                  initialName={enrollmentName}
-                  initialPhone={profile?.contact_phone ?? ""}
                 />
               ) : (
                 <PaidEnrollButton
                   courseId={course.id}
                   courseTitle={course.title}
                   priceInr={course.price_inr}
-                  initialEmail={profile?.contact_email ?? user.email ?? ""}
+                  initialEmail={user.email ?? ""}
                   initialName={enrollmentName}
                   initialPhone={profile?.contact_phone ?? ""}
                 />

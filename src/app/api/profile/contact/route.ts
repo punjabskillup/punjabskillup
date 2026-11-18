@@ -7,16 +7,19 @@ const contactSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(7)
-    .max(24)
-    .regex(/^\+?[0-9\s().-]+$/)
-    .refine((phone) => phone.replace(/\D/g, "").length >= 7),
+    .regex(/^\d{10}$/),
 });
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
-  if (origin && new URL(origin).origin !== request.nextUrl.origin) {
-    return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  if (origin) {
+    try {
+      if (new URL(origin).origin !== request.nextUrl.origin) {
+        return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+      }
+    } catch {
+      return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+    }
   }
 
   let payload: unknown;
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
   const parsed = contactSchema.safeParse(payload);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Enter your name and a valid contact number." },
+      { error: "Enter your name and a 10-digit contact number." },
       { status: 400 },
     );
   }
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
     .from("profiles")
     .update({
       full_name: parsed.data.name,
-      contact_phone: parsed.data.phone,
+      contact_phone: `+91${parsed.data.phone}`,
     })
     .eq("id", user.id)
     .select("id")

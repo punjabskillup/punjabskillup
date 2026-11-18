@@ -44,6 +44,7 @@ export function LearningNavigation({ name }: { name: string }) {
           </summary>
           <div className="learning-account-menu">
             <span className="learning-account-menu-name">{name}</span>
+            <Link className="learning-account-menu-link" href="/user-info">Your information</Link>
             <SignOutButton />
           </div>
         </details>

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { url, anonKey } = getSupabaseConfig();
-  const response = NextResponse.redirect(new URL("/explore", request.url));
+  const response = NextResponse.redirect(new URL("/user-info", request.url));
   response.headers.set("Cache-Control", "no-store");
 
   const supabase = createServerClient(url, anonKey, {
