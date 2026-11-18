@@ -22,10 +22,17 @@ export default async function UserInfoPage() {
     .maybeSingle();
 
   if (error) {
+    console.error("Could not load the signed-in user's profile.", error.code, error.message);
+    const phoneColumnMissing =
+      error.message.includes("contact_phone") &&
+      (error.code === "42703" || error.code === "PGRST204" || error.code === "PGRST200");
+
     return (
       <section className="catalog-page user-info-page">
         <div className="catalog-error" role="alert">
-          We couldn’t load your profile. Please refresh and try again.
+          {phoneColumnMissing
+            ? "The profile database is missing the contact number field. Apply the existing 20261118100000_collect_enrollment_phone.sql migration in Supabase, then refresh this page."
+            : "We couldn’t load your profile. Please check the Supabase profile setup, then refresh and try again."}
         </div>
       </section>
     );
