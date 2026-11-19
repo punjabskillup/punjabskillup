@@ -350,6 +350,19 @@ summary:focus-visible,
   margin: 2px auto 0;
 }
 
+.profile-dashboard-link {
+  display: inline-flex;
+  margin: 0 0 14px;
+  color: #555867;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.profile-dashboard-link:hover {
+  color: var(--red);
+}
+
 .profile-setup-heading {
   margin: 0 0 28px;
   text-align: center;

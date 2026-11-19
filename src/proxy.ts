@@ -101,7 +101,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && pathname === "/") {
-    return NextResponse.redirect(new URL("/explore", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return secureManageResponse(response);

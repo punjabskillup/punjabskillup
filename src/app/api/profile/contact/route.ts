@@ -46,19 +46,58 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please sign in to continue." }, { status: 401 });
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: existingProfile, error: lookupError } = await supabase
     .from("profiles")
-    .update({
-      full_name: parsed.data.name,
-      contact_phone: `+91${parsed.data.phone}`,
-    })
-    .eq("id", user.id)
     .select("id")
+    .eq("id", user.id)
     .maybeSingle();
+
+  const profileWrite = lookupError
+    ? { data: null, error: lookupError }
+    : existingProfile
+      ? await supabase
+          .from("profiles")
+          .update({
+            full_name: parsed.data.name,
+            contact_phone: `+91${parsed.data.phone}`,
+          })
+          .eq("id", user.id)
+          .select("id")
+          .maybeSingle()
+      : await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            full_name: parsed.data.name,
+            contact_phone: `+91${parsed.data.phone}`,
+          })
+          .select("id")
+          .maybeSingle();
+
+  const { data: profile, error: profileError } = profileWrite;
   if (profileError || !profile) {
-    console.error("Could not save learner enrollment contact details.", profileError?.message);
+    console.error(
+      "Could not save learner enrollment contact details.",
+      `code=${profileError?.code || "(none)"}; message=${profileError?.message || "(none)"}; details=${profileError?.details || "(none)"}; hint=${profileError?.hint || "(none)"}; profileReturned=${Boolean(profile)}`,
+    );
+    const databaseMessage = profileError?.message.toLowerCase() ?? "";
+    const profileInsertPolicyMissing =
+      databaseMessage.includes("row-level security") ||
+      databaseMessage.includes("row level security");
+    const permissionErrorMessage = profileInsertPolicyMissing
+      ? "Supabase blocked profile creation because its row-level security policy is missing or does not allow this user. Apply the profile creation migration."
+      : `Supabase denied profile table access${
+          process.env.NODE_ENV === "development" && profileError?.message
+            ? `: ${profileError.message}`
+            : ". Apply the profile access migrations."
+        }`;
     return NextResponse.json(
-      { error: "We couldn’t save your contact details. Please try again." },
+      {
+        error:
+          profileError?.code === "42501"
+            ? `${permissionErrorMessage} Then retry.`
+              : "We couldn’t save your contact details. Please try again.",
+      },
       { status: 500 },
     );
   }

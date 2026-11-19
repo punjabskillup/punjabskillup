@@ -46,7 +46,7 @@ export function ProfileSetupForm({
         throw new Error(result.error ?? "We couldn’t save your profile. Please try again.");
       }
 
-      router.push("/explore");
+      router.replace("/dashboard");
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "We couldn’t save your profile. Please try again.");

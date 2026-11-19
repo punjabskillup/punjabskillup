@@ -32,9 +32,22 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data.session) {
-    console.error("OAuth callback code exchange failed.", error?.message);
+    console.error("OAuth callback code exchange failed.", {
+      code: error?.code,
+      name: error?.name,
+      message: error?.message,
+    });
+    const errorMessage = error?.message.toLowerCase() ?? "";
+    const reason = error?.code?.toLowerCase().includes("flow_state")
+      ? "missing-verifier"
+      : error?.code?.toLowerCase().includes("code_verifier") ||
+          errorMessage.includes("code verifier")
+        ? "invalid-verifier"
+        : errorMessage.includes("fetch failed")
+          ? "supabase-unreachable"
+          : "exchange-failed";
     const errorResponse = NextResponse.redirect(
-      new URL("/?auth=callback-error", request.url),
+      new URL(`/?auth=callback-error&reason=${reason}`, request.url),
     );
     errorResponse.headers.set("Cache-Control", "no-store");
     return errorResponse;
