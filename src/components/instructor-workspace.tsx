@@ -14,7 +14,27 @@ type InstructorWorkspaceProps = {
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  return fallback;
+}
+
+function makeCourseSlug(title: string) {
+  const base = title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 72) || "course";
+  return `${base}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 export function InstructorWorkspace({ courses: initialCourses }: InstructorWorkspaceProps) {
@@ -84,6 +104,7 @@ export function InstructorWorkspace({ courses: initialCourses }: InstructorWorks
       const { data, error } = await supabase
         .from("courses")
         .insert({
+          slug: makeCourseSlug(title),
           title,
           description,
           thumbnail_url: thumbnailFile ? null : thumbnailValue || null,

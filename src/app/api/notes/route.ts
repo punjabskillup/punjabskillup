@@ -133,8 +133,33 @@ export async function POST(request: NextRequest) {
       }),
     );
   } catch (error) {
-    console.error("Cloudflare R2 note upload failed.", error);
-    return errorResponse("The file could not be uploaded. Try again later.", 502);
+    const r2Error = error as {
+      name?: unknown;
+      message?: unknown;
+      Code?: unknown;
+      code?: unknown;
+      $metadata?: { httpStatusCode?: unknown };
+    };
+    const errorName = typeof r2Error.name === "string" ? r2Error.name : "R2Error";
+    const errorCode =
+      typeof r2Error.Code === "string"
+        ? r2Error.Code
+        : typeof r2Error.code === "string"
+          ? r2Error.code
+          : "unknown code";
+    const errorMessage =
+      typeof r2Error.message === "string" ? r2Error.message : "Unknown R2 upload error";
+    const statusCode = r2Error.$metadata?.httpStatusCode;
+    console.error(
+      "Cloudflare R2 note upload failed.",
+      `${errorName}; code=${errorCode}; status=${String(statusCode ?? "unknown")}; message=${errorMessage}`,
+    );
+    return errorResponse(
+      process.env.NODE_ENV === "development"
+        ? `R2 upload failed: ${errorName} (${errorCode}, HTTP ${String(statusCode ?? "unknown")}) — ${errorMessage}`
+        : "The file could not be uploaded. Try again later.",
+      502,
+    );
   }
 
   const { data: note, error: noteError } = await supabase
