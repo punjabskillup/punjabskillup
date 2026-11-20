@@ -112,6 +112,7 @@ export function NotesUploader({ courses }: NotesUploaderProps) {
           </label>
           <div className="form-submit-row">
             <button className="primary-action" type="submit" disabled={isUploading}>
+              {isUploading && <span className="notes-loading-spinner" aria-hidden="true" />}
               {isUploading ? "Uploading..." : "Upload note"}
             </button>
             {message && <p className="form-feedback" role={messageRole}>{message}</p>}

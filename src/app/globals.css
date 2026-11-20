@@ -3930,23 +3930,36 @@ summary:focus-visible,
 
 .note-detail-filename { margin-top: 6px; }
 
+.note-file-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.note-preview-link,
 .note-download-link {
   display: inline-flex;
   min-height: 42px;
-  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border-radius: 10px;
-  background: #d91a2a;
+  border: 1px solid #dedee4;
+  background: #fff;
   padding: 0 15px;
-  color: white;
+  color: #292934;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
 }
 
-.note-download-link:hover { background: #b91524; }
+.note-action-primary { border-color: #d91a2a; background: #d91a2a; color: #fff; }
+.note-action-primary:hover { border-color: #b91524; background: #b91524; }
+.note-action-secondary:hover { background: #f7f7f9; }
+.note-preview-link:focus-visible,
+.note-download-link:focus-visible { outline: 3px solid rgba(217, 26, 42, 0.28); outline-offset: 2px; }
+.note-preview-link svg,
 .note-download-link svg { width: 17px; height: 17px; }
 
 .note-detail .note-body {
@@ -3955,15 +3968,6 @@ summary:focus-visible,
   border-top: 1px solid #ededf0;
   padding: 22px 24px;
 }
-
-.note-pdf-frame {
-  height: min(78vh, 1000px);
-  min-height: 520px;
-  border-top: 1px solid #ededf0;
-  background: #f1f1f3;
-}
-
-.note-pdf-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
 
 .note-file-callout {
   display: flex;
@@ -3979,11 +3983,108 @@ summary:focus-visible,
 .note-file-callout > svg { width: 24px; height: 24px; color: #d91a2a; }
 .note-file-callout p { margin: 4px 0 0; color: #686875; font-size: 14px; }
 
+.pdf-preview-page {
+  display: grid;
+  min-height: 78vh;
+  place-items: center;
+  padding: 40px 20px;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(217, 26, 42, 0.055), transparent 46%),
+    #fafafc;
+}
+
+.pdf-preview-message {
+  width: min(420px, 100%);
+  padding: 36px 30px;
+  text-align: center;
+}
+
+.pdf-preview-mark {
+  display: grid;
+  width: 52px;
+  height: 60px;
+  margin: 0 auto 20px;
+  place-items: center;
+  border: 1px solid #f1c9ce;
+  border-radius: 12px;
+  background: #fff;
+  color: #c81727;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  box-shadow: 0 8px 24px rgba(17, 17, 24, 0.06);
+}
+
+.pdf-preview-kicker {
+  margin: 0 !important;
+  color: #8a8a95 !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.pdf-preview-message h1 {
+  margin: 10px 0 0;
+  color: #111118;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.pdf-preview-message > p:not(.pdf-preview-kicker) { margin: 8px 0 0; color: #686875; font-size: 14px; line-height: 1.6; }
+.pdf-preview-message button { margin-top: 18px; border: 0; background: none; color: #c81727; font: inherit; font-weight: 700; cursor: pointer; }
+.pdf-preview-download { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; margin: 18px 8px 0; border-radius: 9px; background: #d91a2a; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none; }
+
+.pdf-preview-progress {
+  overflow: hidden;
+  height: 3px;
+  margin-top: 26px;
+  border-radius: 99px;
+  background: #efedf0;
+}
+
+.pdf-preview-progress span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: #d91a2a;
+  animation: pdf-preview-progress 1.35s ease-in-out infinite;
+}
+
+@keyframes pdf-preview-progress {
+  0% { transform: translateX(-110%); }
+  55% { transform: translateX(160%); }
+  100% { transform: translateX(290%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-preview-progress span { width: 100%; animation: none; opacity: 0.45; }
+}
+
+.notes-loading-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 9px;
+  vertical-align: -2px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: notes-loading-spin 700ms linear infinite;
+}
+
+@keyframes notes-loading-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-loading-spinner { animation: none; }
+}
+
 @media (max-width: 600px) {
   .note-detail-header { align-items: flex-start; flex-wrap: wrap; padding: 18px; }
   .note-detail-header .catalog-list-icon { width: 36px; height: 36px; }
-  .note-download-link { margin-left: 52px; }
-  .note-pdf-frame { min-height: 65vh; height: 65vh; }
+  .note-file-actions { width: calc(100% - 52px); margin-left: 52px; }
   .note-detail .note-body { padding: 18px; }
 }
 

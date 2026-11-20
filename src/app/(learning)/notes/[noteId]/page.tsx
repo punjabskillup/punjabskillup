@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Eye } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { canAccessNote } from "@/lib/notes/access";
 import { createClient } from "@/lib/supabase/server";
@@ -91,20 +91,24 @@ export default async function NotePage({
             {note.file_name && <p className="note-detail-filename">{note.file_name}</p>}
           </div>
           {note.file_path && note.file_name && (
-            <a className="note-download-link" href={`/api/notes/${note.id}/file?download=1`}>
-              <Download aria-hidden="true" /> Download
-            </a>
+            <div className="note-file-actions">
+              {note.content_type === "application/pdf" && (
+                <a
+                  className="note-preview-link note-action-primary"
+                  href={`/notes/${note.id}/preview`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Eye aria-hidden="true" /> Preview
+                </a>
+              )}
+              <a className="note-download-link note-action-secondary" href={`/api/notes/${note.id}/file?download=1`}>
+                <Download aria-hidden="true" /> Download
+              </a>
+            </div>
           )}
         </header>
         {note.body && <p className="note-body">{note.body}</p>}
-        {note.file_path && note.content_type === "application/pdf" && (
-          <div className="note-pdf-frame">
-            <iframe
-              src={`/api/notes/${note.id}/file`}
-              title={`PDF preview: ${note.title}`}
-            />
-          </div>
-        )}
         {note.file_path && note.content_type !== "application/pdf" && (
           <div className="note-file-callout">
             <FileText aria-hidden="true" />
