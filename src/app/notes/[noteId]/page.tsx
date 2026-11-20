@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Download, FileText, Eye } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { SharedNoteSignInGate } from "@/components/shared-note-sign-in-gate";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { canAccessNote } from "@/lib/notes/access";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,16 +27,24 @@ export default async function NotePage({
   }
 
   if (!user) {
-    const admin = createAdminClient();
-    const { data: sharedNote, error: sharedNoteError } = await admin
+    const { data: sharedNote, error: sharedNoteError } = await supabase
       .from("notes")
-      .select("id,title,is_published,file_name,content_type,courses(title)")
+      .select("id,title,is_published,file_name,content_type")
       .eq("id", noteId)
       .eq("is_published", true)
       .maybeSingle();
 
-    if (sharedNoteError || !sharedNote) notFound();
-    const sharedCourse = sharedNote.courses[0] ?? null;
+    if (sharedNoteError) {
+      console.error("Shared note preview lookup failed.", sharedNoteError.message);
+      return (
+        <section className="catalog-page note-share-auth-page">
+          <div className="catalog-error" role="alert">
+            This shared note is temporarily unavailable. Please try again later.
+          </div>
+        </section>
+      );
+    }
+    if (!sharedNote) notFound();
 
     return (
       <main className="shared-note-page">
@@ -48,7 +55,7 @@ export default async function NotePage({
               <header className="note-detail-header">
                 <span className="catalog-list-icon" aria-hidden="true"><FileText /></span>
                 <div className="note-detail-title">
-                  <p className="note-detail-eyebrow">{sharedCourse?.title ?? "Course notes"}</p>
+                  <p className="note-detail-eyebrow">Shared course note</p>
                   <h1>{sharedNote.title}</h1>
                   {sharedNote.file_name && <p className="note-detail-filename">{sharedNote.file_name}</p>}
                 </div>
@@ -84,7 +91,7 @@ export default async function NotePage({
 
   if (error) {
     return (
-      <section className="catalog-page">
+      <section className="catalog-page note-share-auth-page">
         <div className="catalog-error" role="alert">
           We couldn&apos;t load this note. Please try again later.
         </div>
@@ -100,7 +107,7 @@ export default async function NotePage({
     allowed = await canAccessNote(supabase, user.id, note);
   } catch {
     return (
-      <section className="catalog-page">
+      <section className="catalog-page note-share-auth-page">
         <div className="catalog-error" role="alert">
           We couldn&apos;t verify your access to this note.
         </div>
@@ -111,7 +118,7 @@ export default async function NotePage({
   const course = note.courses[0] ?? null;
   if (!allowed) {
     return (
-      <section className="catalog-page">
+      <section className="catalog-page note-share-auth-page">
         <Link className="catalog-back-link" href="/notes">Back to notes</Link>
         <div className="catalog-empty">
           <h1>{note.title}</h1>
@@ -129,7 +136,7 @@ export default async function NotePage({
   }
 
   return (
-    <section className="catalog-page">
+    <section className="catalog-page note-share-auth-page">
       <Link className="catalog-back-link" href="/notes">Back to notes</Link>
       <article className="note-detail">
         <header className="note-detail-header">

@@ -188,8 +188,16 @@ export async function POST(request: NextRequest) {
     return errorResponse("The file uploaded, but the note could not be saved.", 500);
   }
 
+  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const configuredHost = configuredSiteUrl ? new URL(configuredSiteUrl).hostname : "";
+  const configuredShareOrigin =
+    configuredSiteUrl && !configuredHost.includes("your-domain")
+      ? configuredSiteUrl
+      : undefined;
+  const shareOrigin = configuredShareOrigin ?? request.nextUrl.origin;
+
   return NextResponse.json(
-    { id: note.id, url: `/notes/${note.id}` },
+    { id: note.id, url: new URL(`/notes/${note.id}`, shareOrigin).toString() },
     { status: 201, headers: { "Cache-Control": "no-store" } },
   );
 }

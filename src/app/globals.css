@@ -3983,7 +3983,12 @@ summary:focus-visible,
 .note-file-callout > svg { width: 24px; height: 24px; color: #d91a2a; }
 .note-file-callout p { margin: 4px 0 0; color: #686875; font-size: 14px; }
 
-.shared-note-page { min-height: 64vh; }
+.shared-note-page {
+  min-height: 100vh;
+  padding: 36px 24px 64px;
+  background: #fff;
+}
+.note-share-auth-page { min-height: 100vh; padding: 36px 16px 64px; }
 .shared-note-underlay { min-height: inherit; opacity: 0.52; filter: blur(1px); pointer-events: none; }
 .shared-note-underlay .catalog-page { padding-top: 10px; }
 .shared-note-locked-body { display: grid; gap: 13px; padding: 28px 24px; border-top: 1px solid #ededf0; }
@@ -4179,6 +4184,8 @@ summary:focus-visible,
 }
 
 @media (max-width: 600px) {
+  .shared-note-page { padding: 24px 16px calc(48px + env(safe-area-inset-bottom)); }
+  .note-share-auth-page { padding: 24px 0 calc(48px + env(safe-area-inset-bottom)); }
   .note-detail-header { align-items: flex-start; flex-wrap: wrap; padding: 18px; }
   .note-detail-header .catalog-list-icon { width: 36px; height: 36px; }
   .note-file-actions { width: calc(100% - 52px); margin-left: 52px; }
