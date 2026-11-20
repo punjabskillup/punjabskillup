@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Download, FileText } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { canAccessNote } from "@/lib/notes/access";
 import { createClient } from "@/lib/supabase/server";
@@ -81,19 +82,36 @@ export default async function NotePage({
   return (
     <section className="catalog-page">
       <Link className="catalog-back-link" href="/notes">Back to notes</Link>
-      <header className="catalog-heading">
-        <h1>{note.title}</h1>
-        <p>{course?.title ?? "General notes"}</p>
-      </header>
-      {note.body && <p className="note-body">{note.body}</p>}
-      {note.file_path && note.file_name && (
-        <a
-          className="manage-primary-link"
-          href={`/api/notes/${note.id}/file`}
-        >
-          Download {note.file_name}
-        </a>
-      )}
+      <article className="note-detail">
+        <header className="note-detail-header">
+          <span className="catalog-list-icon" aria-hidden="true"><FileText /></span>
+          <div className="note-detail-title">
+            <p className="note-detail-eyebrow">{course?.title ?? "General notes"}</p>
+            <h1>{note.title}</h1>
+            {note.file_name && <p className="note-detail-filename">{note.file_name}</p>}
+          </div>
+          {note.file_path && note.file_name && (
+            <a className="note-download-link" href={`/api/notes/${note.id}/file?download=1`}>
+              <Download aria-hidden="true" /> Download
+            </a>
+          )}
+        </header>
+        {note.body && <p className="note-body">{note.body}</p>}
+        {note.file_path && note.content_type === "application/pdf" && (
+          <div className="note-pdf-frame">
+            <iframe
+              src={`/api/notes/${note.id}/file`}
+              title={`PDF preview: ${note.title}`}
+            />
+          </div>
+        )}
+        {note.file_path && note.content_type !== "application/pdf" && (
+          <div className="note-file-callout">
+            <FileText aria-hidden="true" />
+            <div><strong>Document ready</strong><p>Download this file to open it on your device.</p></div>
+          </div>
+        )}
+      </article>
       {!note.body && !note.file_path && (
         <div className="catalog-error" role="alert">
           This note does not have any content available.

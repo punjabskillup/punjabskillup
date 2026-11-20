@@ -3892,6 +3892,101 @@ summary:focus-visible,
   white-space: pre-wrap;
 }
 
+.note-detail {
+  overflow: hidden;
+  border: 1px solid #e6e6eb;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 36px rgba(17, 17, 24, 0.06);
+}
+
+.note-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.note-detail-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.note-detail-title h1 {
+  margin: 2px 0 0;
+  color: #111118;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+
+.note-detail-eyebrow,
+.note-detail-filename {
+  margin: 0;
+  color: #686875;
+  font-size: 13px;
+}
+
+.note-detail-filename { margin-top: 6px; }
+
+.note-download-link {
+  display: inline-flex;
+  min-height: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  background: #d91a2a;
+  padding: 0 15px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.note-download-link:hover { background: #b91524; }
+.note-download-link svg { width: 17px; height: 17px; }
+
+.note-detail .note-body {
+  max-width: none;
+  margin: 0;
+  border-top: 1px solid #ededf0;
+  padding: 22px 24px;
+}
+
+.note-pdf-frame {
+  height: min(78vh, 1000px);
+  min-height: 520px;
+  border-top: 1px solid #ededf0;
+  background: #f1f1f3;
+}
+
+.note-pdf-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+.note-file-callout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 24px 24px;
+  border-radius: 12px;
+  background: #f7f7f9;
+  padding: 18px;
+  color: #292934;
+}
+
+.note-file-callout > svg { width: 24px; height: 24px; color: #d91a2a; }
+.note-file-callout p { margin: 4px 0 0; color: #686875; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .note-detail-header { align-items: flex-start; flex-wrap: wrap; padding: 18px; }
+  .note-detail-header .catalog-list-icon { width: 36px; height: 36px; }
+  .note-download-link { margin-left: 52px; }
+  .note-pdf-frame { min-height: 65vh; height: 65vh; }
+  .note-detail .note-body { padding: 18px; }
+}
+
 .instructor-form input:focus,
 .instructor-form textarea:focus,
 .instructor-form select:focus {

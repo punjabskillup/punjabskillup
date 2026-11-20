@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 const noteIdSchema = z.string().uuid();
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ noteId: string }> },
 ) {
   const { noteId: noteIdValue } = await params;
@@ -69,9 +69,12 @@ export async function GET(
     }
 
     const fileName = sanitizeNoteFileName(note.file_name);
+    const isPdf = note.content_type === "application/pdf";
+    const forceDownload = request.nextUrl.searchParams.get("download") === "1";
+    const disposition = isPdf && !forceDownload ? "inline" : "attachment";
     const headers = new Headers({
       "Cache-Control": "private, no-store",
-      "Content-Disposition": `attachment; filename="${fileName}"`,
+      "Content-Disposition": `${disposition}; filename="${fileName}"`,
       "Content-Type": note.content_type,
       "X-Content-Type-Options": "nosniff",
     });
