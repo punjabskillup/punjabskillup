@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 type GoogleSignInButtonProps = {
   variant: "outline" | "google" | "primary";
+  returnTo?: string;
 };
 
 function GoogleMark() {
@@ -20,7 +21,7 @@ function GoogleMark() {
   );
 }
 
-export function GoogleSignInButton({ variant }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ variant, returnTo }: GoogleSignInButtonProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,6 +32,7 @@ export function GoogleSignInButton({ variant }: GoogleSignInButtonProps) {
     try {
       const supabase = createClient();
       const redirectTo = new URL("/auth/callback", window.location.origin);
+      if (returnTo) redirectTo.searchParams.set("next", returnTo);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: redirectTo.toString() },

@@ -3983,6 +3983,103 @@ summary:focus-visible,
 .note-file-callout > svg { width: 24px; height: 24px; color: #d91a2a; }
 .note-file-callout p { margin: 4px 0 0; color: #686875; font-size: 14px; }
 
+.shared-note-page { min-height: 64vh; }
+.shared-note-underlay { min-height: inherit; opacity: 0.52; filter: blur(1px); pointer-events: none; }
+.shared-note-underlay .catalog-page { padding-top: 10px; }
+.shared-note-locked-body { display: grid; gap: 13px; padding: 28px 24px; border-top: 1px solid #ededf0; }
+.shared-note-locked-body span { display: block; width: min(720px, 92%); height: 11px; border-radius: 99px; background: #e9e9ee; }
+.shared-note-locked-body span:nth-child(2) { width: min(640px, 82%); }
+.shared-note-locked-body span:nth-child(3) { width: min(390px, 54%); }
+
+.shared-note-sign-in-dialog {
+  width: min(420px, calc(100% - 32px));
+  max-width: none;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 22px;
+  background: #fff;
+  padding: 34px 32px 28px;
+  color: #17171f;
+  text-align: center;
+  box-shadow: 0 28px 90px rgba(20, 20, 30, 0.25);
+}
+
+.shared-note-sign-in-dialog::backdrop {
+  background: rgba(21, 21, 29, 0.48);
+  backdrop-filter: blur(5px);
+  animation: note-gate-fade-in 180ms ease-out both;
+}
+
+.shared-note-dialog-mark {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border-radius: 14px;
+  background: #d91a2a;
+  color: #fff;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.shared-note-dialog-eyebrow { margin: 0; color: #858590; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.shared-note-sign-in-dialog h2 { margin: 9px 0 0; font-family: var(--font-space-grotesk), sans-serif; font-size: 26px; letter-spacing: -0.7px; line-height: 1.2; }
+.shared-note-dialog-copy { margin: 10px 0 22px; color: #666671; font-size: 14px; line-height: 1.55; }
+.shared-note-sign-in-dialog .sign-in-control { display: flex; justify-content: center; }
+.shared-note-sign-in-dialog .sign-in-button { width: 100%; min-height: 48px; justify-content: center; border-radius: 11px; }
+.shared-note-dialog-legal { margin: 18px 0 0; color: #8a8a95; font-size: 11px; line-height: 1.6; }
+.shared-note-dialog-legal a { color: #6c6c77; text-underline-offset: 2px; }
+
+@keyframes note-gate-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-note-sign-in-dialog::backdrop { animation: none; }
+}
+
+.note-route-loading {
+  display: grid;
+  min-height: 48vh;
+  place-items: center;
+}
+
+.note-loading-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #ececf0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 16px 18px;
+  box-shadow: 0 8px 24px rgba(17, 17, 24, 0.04);
+}
+
+.note-loading-icon {
+  width: 30px;
+  height: 36px;
+  border: 1px solid #f1c9ce;
+  border-radius: 7px;
+  background: linear-gradient(#fff 0 0) padding-box, #fff;
+  box-shadow: inset 0 -8px #fff5f6;
+}
+
+.note-loading-card p { margin: 0; color: #44444f; font-size: 14px; font-weight: 600; }
+
+.note-loading-dots { display: flex; align-items: center; gap: 4px; margin-left: 2px; }
+.note-loading-dots span { width: 5px; height: 5px; border-radius: 50%; background: #d91a2a; animation: note-loading-dot 900ms ease-in-out infinite; }
+.note-loading-dots span:nth-child(2) { animation-delay: 140ms; }
+.note-loading-dots span:nth-child(3) { animation-delay: 280ms; }
+
+@keyframes note-loading-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-loading-dots span { animation: none; opacity: 0.7; }
+}
+
 .pdf-preview-page {
   display: grid;
   min-height: 78vh;

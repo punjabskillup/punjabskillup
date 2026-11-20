@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, FileText, Eye } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
+import { SharedNoteSignInGate } from "@/components/shared-note-sign-in-gate";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { canAccessNote } from "@/lib/notes/access";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,8 +23,55 @@ export default async function NotePage({
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
-  if (userError || !user) {
+  if (userError && userError.name !== "AuthSessionMissingError") {
     redirect("/");
+  }
+
+  if (!user) {
+    const admin = createAdminClient();
+    const { data: sharedNote, error: sharedNoteError } = await admin
+      .from("notes")
+      .select("id,title,is_published,file_name,content_type,courses(title)")
+      .eq("id", noteId)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (sharedNoteError || !sharedNote) notFound();
+    const sharedCourse = sharedNote.courses[0] ?? null;
+
+    return (
+      <main className="shared-note-page">
+        <div className="shared-note-underlay" inert>
+          <section className="catalog-page">
+            <Link className="catalog-back-link" href="/">PunjabSkillUp</Link>
+            <article className="note-detail">
+              <header className="note-detail-header">
+                <span className="catalog-list-icon" aria-hidden="true"><FileText /></span>
+                <div className="note-detail-title">
+                  <p className="note-detail-eyebrow">{sharedCourse?.title ?? "Course notes"}</p>
+                  <h1>{sharedNote.title}</h1>
+                  {sharedNote.file_name && <p className="note-detail-filename">{sharedNote.file_name}</p>}
+                </div>
+                <div className="note-file-actions">
+                  {sharedNote.content_type === "application/pdf" && (
+                    <button className="note-preview-link note-action-primary" type="button" disabled>
+                      <Eye aria-hidden="true" /> Preview
+                    </button>
+                  )}
+                  <button className="note-download-link note-action-secondary" type="button" disabled>
+                    <Download aria-hidden="true" /> Download
+                  </button>
+                </div>
+              </header>
+              <div className="shared-note-locked-body" aria-hidden="true">
+                <span /><span /><span />
+              </div>
+            </article>
+          </section>
+        </div>
+        <SharedNoteSignInGate noteId={noteId} />
+      </main>
+    );
   }
 
   const { data: note, error } = await supabase

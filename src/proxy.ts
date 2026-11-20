@@ -5,6 +5,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isManagePath =
     pathname === "/manage" || pathname.startsWith("/manage/");
+  const isPublishedNoteSharePath =
+    /^\/notes\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      pathname,
+    );
 
   function secureManageResponse(response: NextResponse) {
     if (isManagePath) {
@@ -38,21 +42,22 @@ export async function proxy(request: NextRequest) {
   }
 
   const isProtectedPath =
-    isManagePath ||
-    pathname === "/explore" ||
-    pathname.startsWith("/explore/") ||
-    pathname === "/notes" ||
-    pathname.startsWith("/notes/") ||
-    pathname === "/free-lectures" ||
-    pathname.startsWith("/free-lectures/") ||
-    pathname === "/dashboard" ||
-    pathname.startsWith("/dashboard/") ||
-    pathname === "/courses" ||
-    pathname.startsWith("/courses/") ||
-    pathname === "/instructor" ||
-    pathname.startsWith("/instructor/") ||
-    pathname === "/user-info" ||
-    pathname.startsWith("/user-info/");
+    !isPublishedNoteSharePath &&
+    (isManagePath ||
+      pathname === "/explore" ||
+      pathname.startsWith("/explore/") ||
+      pathname === "/notes" ||
+      pathname.startsWith("/notes/") ||
+      pathname === "/free-lectures" ||
+      pathname.startsWith("/free-lectures/") ||
+      pathname === "/dashboard" ||
+      pathname.startsWith("/dashboard/") ||
+      pathname === "/courses" ||
+      pathname.startsWith("/courses/") ||
+      pathname === "/instructor" ||
+      pathname.startsWith("/instructor/") ||
+      pathname === "/user-info" ||
+      pathname.startsWith("/user-info/"));
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

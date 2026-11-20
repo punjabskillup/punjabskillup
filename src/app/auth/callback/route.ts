@@ -4,13 +4,17 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
+  const requestedNext = request.nextUrl.searchParams.get("next");
+  const nextPath = requestedNext && /^\/notes\/[0-9a-f-]{36}$/i.test(requestedNext)
+    ? requestedNext
+    : "/dashboard";
 
   if (!code) {
     return NextResponse.redirect(new URL("/?auth=missing-code", request.url));
   }
 
   const { url, anonKey } = getSupabaseConfig();
-  const response = NextResponse.redirect(new URL("/dashboard", request.url));
+  const response = NextResponse.redirect(new URL(nextPath, request.url));
   response.headers.set("Cache-Control", "no-store");
 
   const supabase = createServerClient(url, anonKey, {
